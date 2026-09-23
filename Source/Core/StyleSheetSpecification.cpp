@@ -411,6 +411,12 @@ void StyleSheetSpecification::RegisterDefaultProperties()
 
 	// Rare properties (not added to computed values)
 	RegisterProperty(PropertyId::FillImage, "fill-image", "", false, false).AddParser("string");
+	RegisterProperty("image-position-x", "0px", false).AddParser("length");
+	RegisterProperty("image-position-y", "0px", false).AddParser("length");
+	RegisterProperty("stage-scale-width", "0px", false).AddParser("length");
+	RegisterProperty("stage-scale-height", "0px", false).AddParser("length");
+	RegisterProperty("stage-scale-mode", "contain", false).AddParser("keyword", "contain, width, cover");
+	RegisterShorthand("stage_scale", "stage-scale-width, stage-scale-height, stage-scale-mode", ShorthandType::FallThrough);
 
 	// Flexbox
 	RegisterProperty(PropertyId::AlignContent, "align-content", "stretch", false, true).AddParser("keyword", "flex-start, flex-end, center, space-between, space-around, space-evenly, stretch");

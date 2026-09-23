@@ -8,6 +8,7 @@
 #include "../../Include/RmlUi/Core/ElementUtilities.h"
 #include "../../Include/RmlUi/Core/Factory.h"
 #include "../../Include/RmlUi/Core/Profiling.h"
+#include "../../Include/RmlUi/Core/Property.h"
 #include "../../Include/RmlUi/Core/RenderManager.h"
 #include "../../Include/RmlUi/Core/StreamMemory.h"
 #include "../../Include/RmlUi/Core/SystemInterface.h"
@@ -196,6 +197,8 @@ bool Context::Update()
 	for (auto& data_model : data_models)
 		data_model.second->Update(true);
 
+	UpdateStageScale();
+
 	// The style definition of each document should be independent of each other. By manually resetting these flags we avoid unnecessary definition
 	// lookups in unrelated documents, such as when adding a new document. Adding an element dirties the parent definition, which in this case is the
 	// root. By extension the definition of all the other documents are also dirtied, unnecessarily.
@@ -217,6 +220,66 @@ bool Context::Update()
 	ReleaseUnloadedDocuments();
 
 	return true;
+}
+
+void Context::UpdateStageScale()
+{
+	Element* stage_element = nullptr;
+
+	const auto find_stage_element = [&stage_element](auto&& self, Element* element) -> void {
+		if (stage_element)
+			return;
+
+		const Property* width_property = element->GetProperty("stage-scale-width");
+		const Property* height_property = element->GetProperty("stage-scale-height");
+		if (width_property && height_property && width_property->GetNumericValue().number > 0.f && height_property->GetNumericValue().number > 0.f)
+		{
+			stage_element = element;
+			return;
+		}
+
+		for (int i = 0; i < element->GetNumChildren(); ++i)
+			self(self, element->GetChild(i));
+	};
+
+	find_stage_element(find_stage_element, root.get());
+
+	if (!stage_element)
+	{
+		if (stage_scale_value != 1.f)
+			SetDensityIndependentPixelRatio(1.f);
+		stage_scale_element = nullptr;
+		stage_scale_dimensions = {-1, -1};
+		stage_scale_value = 1.f;
+		return;
+	}
+
+	const float logical_width = stage_element->GetProperty("stage-scale-width")->GetNumericValue().number;
+	const float logical_height = stage_element->GetProperty("stage-scale-height")->GetNumericValue().number;
+	const float width_scale = dimensions.x / logical_width;
+	const float height_scale = dimensions.y / logical_height;
+
+	int scale_mode = 0;
+	if (const Property* mode_property = stage_element->GetProperty("stage-scale-mode"))
+		scale_mode = mode_property->Get<int>();
+
+	const float scale = scale_mode == 1 ? width_scale : (scale_mode == 2 ? std::max(width_scale, height_scale) : std::min(width_scale, height_scale));
+	const bool changed = stage_element != stage_scale_element || dimensions != stage_scale_dimensions || scale != stage_scale_value;
+	if (!changed)
+		return;
+
+	stage_scale_element = stage_element;
+	stage_scale_dimensions = dimensions;
+	stage_scale_value = scale;
+	SetDensityIndependentPixelRatio(scale);
+
+	const float offset_x = (dimensions.x - logical_width * scale) * 0.5f;
+	const float offset_y = (dimensions.y - logical_height * scale) * 0.5f;
+	stage_element->SetProperty("position", "absolute");
+	stage_element->SetProperty("left", ToString(offset_x) + "px");
+	stage_element->SetProperty("top", ToString(offset_y) + "px");
+	stage_element->SetProperty("transform-origin", "left top");
+	stage_element->SetProperty("transform", "none");
 }
 
 bool Context::Render()
