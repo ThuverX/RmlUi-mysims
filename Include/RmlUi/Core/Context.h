@@ -11,6 +11,7 @@ namespace Rml {
 
 class Stream;
 class ContextInstancer;
+class Element;
 class ElementDocument;
 class EventListener;
 class DataModel;
@@ -303,6 +304,10 @@ private:
 	// Wrapper around the render interface for tracking the render state.
 	RenderManager* render_manager;
 
+	Element* stage_scale_element = nullptr;
+	Vector2i stage_scale_dimensions{-1, -1};
+	float stage_scale_value = -1.f;
+
 	SmallUnorderedSet<String> active_themes;
 
 	ContextInstancer* instancer;
@@ -421,6 +426,8 @@ private:
 	void GenerateKeyModifierEventParameters(Dictionary& parameters, int key_modifier_state);
 	// Builds the parameters for a drag event.
 	void GenerateDragEventParameters(Dictionary& parameters);
+	// Applies the built-in stage_scale layout to the first element declaring it.
+	void UpdateStageScale();
 
 	// Releases all unloaded documents pending destruction.
 	void ReleaseUnloadedDocuments();

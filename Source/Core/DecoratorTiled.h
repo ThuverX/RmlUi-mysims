@@ -26,6 +26,8 @@ public:
 		FLIP_HORIZONTAL,  // Flipped horizontally.
 		FLIP_VERTICAL,    // Flipped vertically.
 		ROTATE_180,       // Rotated 180 degrees clockwise.
+		ROTATE_90,        // Rotated 90 degrees counter-clockwise.
+		ROTATE_90_FLIP_HORIZONTAL,
 	};
 	/**
 	    Stores the fit mode of a tile.
@@ -39,6 +41,7 @@ public:
 		REPEAT,     // Tile is repeated on both x and y axis
 		REPEAT_X,   // Tile is repeated on the x axis
 		REPEAT_Y,   // Tile is repeated on the y axis
+		CONTAIN_HEIGHT_REPEAT_X, // Tile is scaled to the surface height and repeated on the x axis.
 	};
 
 	/**
