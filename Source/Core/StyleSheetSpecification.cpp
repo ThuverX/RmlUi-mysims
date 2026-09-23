@@ -437,10 +437,10 @@ void StyleSheetSpecification::RegisterDefaultProperties()
 	RegisterProperty("stage-scale-width", "0px", false).AddParser("length");
 	RegisterProperty("stage-scale-height", "0px", false).AddParser("length");
 	RegisterProperty("stage-scale-mode", "contain", false).AddParser("keyword", "contain, width, cover");
-	RegisterShorthand("stage_scale", "stage-scale-width, stage-scale-height, stage-scale-mode", ShorthandType::FallThrough);
 
 	RMLUI_ASSERTMSG(instance->properties.shorthand_map->AssertAllInserted(ShorthandId::NumDefinedIds), "Missing specification for one or more Shorthand IDs.");
 	RMLUI_ASSERTMSG(instance->properties.property_map->AssertAllInserted(PropertyId::NumDefinedIds), "Missing specification for one or more Property IDs.");
+	RegisterShorthand("stage_scale", "stage-scale-width, stage-scale-height, stage-scale-mode", ShorthandType::FallThrough);
 	// clang-format on
 }
 
