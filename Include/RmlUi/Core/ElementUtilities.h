@@ -65,6 +65,8 @@ public:
 	/// @return True if a clipping region exists for the element and clip_origin and clip_window were set, false if not.
 	static bool GetClippingRegion(Element* element, Rectanglei& clip_region, ClipMaskGeometryList* clip_mask_list = nullptr,
 		bool force_clip_self = false);
+	/// Tests a window-space point against every clipping ancestor, including transformed ones.
+	static bool IsPointWithinClippingRegion(Element* element, Vector2f point);
 	/// Sets the clipping region from an element and its ancestors.
 	/// @param[in] element The element to generate the clipping region from.
 	/// @param[in] force_clip_self If true, also clips to the border area of the provided element regardless.

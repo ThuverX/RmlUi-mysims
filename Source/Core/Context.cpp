@@ -1507,16 +1507,15 @@ Element* Context::GetElementAtPoint(Vector2f point, const Element* ignore_elemen
 		return nullptr;
 
 	// Projection may fail if we have a singular transformation matrix.
-	bool projection_result = element->Project(point);
+	Vector2f projected_point = point;
+	bool projection_result = element->Project(projected_point);
 
 	// Check if the point is actually within this element.
-	bool within_element = (projection_result && element->IsPointWithinElement(point));
+	bool within_element = (projection_result && element->IsPointWithinElement(projected_point));
 	if (within_element)
 	{
 		// The element may have been clipped out of view if it overflows an ancestor, so check its clipping region.
-		Rectanglei clip_region;
-		if (ElementUtilities::GetClippingRegion(element, clip_region))
-			within_element = clip_region.Contains(Vector2i(point));
+		within_element = ElementUtilities::IsPointWithinClippingRegion(element, point);
 	}
 
 	if (within_element)

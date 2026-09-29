@@ -120,6 +120,35 @@ static const String document_scroll_rml = R"(
 </rml>
 )";
 
+TEST_CASE("Element.hover_inside_transformed_scroll_area")
+{
+	Context* context = TestsShell::GetContext();
+	REQUIRE(context);
+
+	const String rml = R"(<rml><head><style>
+		body { margin: 0; }
+		#scroll { position: absolute; left: 0; top: 0; width: 100px; height: 100px;
+			overflow-y: auto; transform: translateX(200px); }
+		#child { display: block; width: 100px; height: 200px; }
+		scrollbarvertical { width: 16px; }
+	</style></head><body><div id="scroll"><div id="child"></div></div></body></rml>)";
+	ElementDocument* document = context->LoadDocumentFromMemory(rml);
+	REQUIRE(document);
+	document->Show();
+	context->Update();
+	context->Render();
+
+	Element* child = document->GetElementById("child");
+	REQUIRE(child);
+	context->ProcessMouseMove(250, 50, 0);
+	CHECK(child->IsPseudoClassSet("hover"));
+	context->ProcessMouseMove(250, 150, 0);
+	CHECK_FALSE(child->IsPseudoClassSet("hover"));
+
+	document->Close();
+	TestsShell::ShutdownShell();
+}
+
 TEST_CASE("Element")
 {
 	Context* context = TestsShell::GetContext();

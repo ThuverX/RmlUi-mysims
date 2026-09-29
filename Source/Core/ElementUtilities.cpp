@@ -210,6 +210,50 @@ bool ElementUtilities::GetClippingRegion(Element* element, Rectanglei& out_clip_
 	return clip_region.Valid();
 }
 
+bool ElementUtilities::IsPointWithinClippingRegion(Element* element, Vector2f point)
+{
+	using Style::Clip;
+	const Clip target_element_clip = element->GetComputedValues().clip();
+	if (target_element_clip == Clip::Type::None)
+		return true;
+
+	int num_ignored_clips = target_element_clip.GetNumber();
+	for (Element* clipping_element = element->GetOffsetParent(); clipping_element; clipping_element = clipping_element->GetOffsetParent())
+	{
+		const ComputedValues& clip_computed = clipping_element->GetComputedValues();
+		const bool clip_enabled = (clip_computed.overflow_x() != Style::Overflow::Visible || clip_computed.overflow_y() != Style::Overflow::Visible);
+		const bool clip_always = (clip_computed.clip() == Clip::Type::Always);
+		const bool clip_none = (clip_computed.clip() == Clip::Type::None);
+
+		if ((clip_always || clip_enabled) && num_ignored_clips == 0)
+		{
+			const bool has_clipping_content =
+				(clip_always || clipping_element->GetClientWidth() < clipping_element->GetScrollWidth() - 0.5f ||
+					clipping_element->GetClientHeight() < clipping_element->GetScrollHeight() - 0.5f);
+			if (has_clipping_content)
+			{
+				Vector2f projected_point = point;
+				if (!clipping_element->Project(projected_point))
+					return false;
+				const BoxArea clip_area = clipping_element->GetClipArea();
+				const Vector2f offset = clipping_element->GetAbsoluteOffset(clip_area).Round();
+				const Vector2f size = clipping_element->GetRenderBox(clip_area).GetFillSize();
+				Rectanglef region = Rectanglef::FromPositionSize(offset, size);
+				Math::SnapToPixelGrid(region);
+				if (!Rectanglei(region).Contains(Vector2i(projected_point)))
+					return false;
+			}
+		}
+
+		if (num_ignored_clips > 0 && clip_enabled)
+			num_ignored_clips--;
+		num_ignored_clips = Math::Max(num_ignored_clips, clip_computed.clip().GetNumber());
+		if (clip_none)
+			break;
+	}
+	return true;
+}
+
 bool ElementUtilities::SetClippingRegion(Element* element, bool force_clip_self)
 {
 	Context* context = element->GetContext();
