@@ -5,7 +5,9 @@ extern "C" {
 #endif
 
 // The standard Lua headers
+#include <lauxlib.h>
 #include <lua_compat.h>
+#include <lualib.h>
 
 #ifndef RMLUI_LUA_AS_CXX
 }
