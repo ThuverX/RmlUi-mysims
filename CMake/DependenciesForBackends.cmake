@@ -13,7 +13,7 @@ if(RMLUI_BACKEND MATCHES "^SDL")
 	mark_as_advanced(RMLUI_SDL_VERSION_MAJOR)
 
 	# List of SDL backends that require SDL_image to work with samples
-	set(RMLUI_SDL_BACKENDS_WITH_SDLIMAGE "SDL_GL2" "SDL_GL3" "SDL_SDLrenderer" "SDL_GPU")
+	set(RMLUI_SDL_BACKENDS_WITH_SDLIMAGE "SDL_GL2" "SDL_GL3" "SDL_DX12" "SDL_SDLrenderer" "SDL_GPU")
 
 	# Determine if the selected SDL backend requires SDL_image
 	if(RMLUI_BACKEND IN_LIST RMLUI_SDL_BACKENDS_WITH_SDLIMAGE)
@@ -188,6 +188,37 @@ endif()
 # X11
 if(RMLUI_BACKEND MATCHES "^X11")
 	find_package("X11")
+endif()
+
+# Wayland
+if(RMLUI_BACKEND MATCHES "^Wayland")
+	find_package(PkgConfig REQUIRED)
+
+	pkg_check_modules(RMLUI_WAYLAND_CLIENT REQUIRED IMPORTED_TARGET wayland-client)
+	pkg_check_modules(RMLUI_WAYLAND_CURSOR REQUIRED IMPORTED_TARGET wayland-cursor)
+	pkg_check_modules(RMLUI_WAYLAND_EGL REQUIRED IMPORTED_TARGET wayland-egl)
+	pkg_check_modules(RMLUI_XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
+	pkg_check_modules(RMLUI_EGL REQUIRED IMPORTED_TARGET egl)
+	pkg_check_modules(RMLUI_LIBDECOR REQUIRED IMPORTED_TARGET libdecor-0)
+	pkg_check_modules(RMLUI_WAYLAND_PROTOCOLS REQUIRED wayland-protocols>=1.32)
+	pkg_check_modules(RMLUI_WAYLAND_SCANNER REQUIRED wayland-scanner)
+
+	pkg_get_variable(RMLUI_WAYLAND_PROTOCOLS_DIR wayland-protocols pkgdatadir)
+	pkg_get_variable(RMLUI_WAYLAND_SCANNER_EXECUTABLE wayland-scanner wayland_scanner)
+	set(RMLUI_WAYLAND_CURSOR_SHAPE_PROTOCOL
+		"${RMLUI_WAYLAND_PROTOCOLS_DIR}/staging/cursor-shape/cursor-shape-v1.xml"
+	)
+	set(RMLUI_WAYLAND_TABLET_PROTOCOL
+		"${RMLUI_WAYLAND_PROTOCOLS_DIR}/unstable/tablet/tablet-unstable-v2.xml"
+	)
+
+	report_dependency_found("RMLUI_WAYLAND_CLIENT" PkgConfig::RMLUI_WAYLAND_CLIENT)
+	report_dependency_found("RMLUI_WAYLAND_CURSOR" PkgConfig::RMLUI_WAYLAND_CURSOR)
+	report_dependency_found("RMLUI_WAYLAND_EGL" PkgConfig::RMLUI_WAYLAND_EGL)
+	report_dependency_found("RMLUI_XKBCOMMON" PkgConfig::RMLUI_XKBCOMMON)
+	report_dependency_found("RMLUI_EGL" PkgConfig::RMLUI_EGL)
+	report_dependency_found("RMLUI_LIBDECOR" PkgConfig::RMLUI_LIBDECOR)
+	report_dependency_found("RMLUI_WAYLAND_PROTOCOLS" "cursor-shape-v1")
 endif()
 
 # --- Rendering APIs ---

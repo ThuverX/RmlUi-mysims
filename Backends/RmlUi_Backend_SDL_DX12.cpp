@@ -95,10 +95,11 @@ public:
     Lifetime governed by the calls to Backend::Initialize() and Backend::Shutdown().
  */
 struct BackendData {
-	BackendData(SDL_Window* window) : window(window) { system_interface.SetWindow(window); }
+	BackendData(SDL_Window* window) : system_interface(window), window(window) {}
 
 	SystemInterface_SDL system_interface;
 	Rml::UniquePtr<RenderInterface_DX12_SDL> render_interface;
+	TextInputMethodEditor_SDL text_input_method_editor;
 
 	SDL_Window* window;
 
@@ -203,6 +204,8 @@ bool Backend::Initialize(const char* window_name, int width, int height, bool al
 	}
 
 	data->render_interface->SetViewport(width, height);
+
+	Rml::SetTextInputHandler(&data->text_input_method_editor);
 
 	return true;
 }
@@ -335,6 +338,13 @@ bool Backend::ProcessEvents(Rml::Context* context, KeyDownCallback key_down_call
 				break;
 		}
 		break;
+		case event_text_editing:
+		{
+			propagate_event = false;
+			data->text_input_method_editor.HandleEdit(ev.edit);
+		}
+		break;
+
 			RMLSDL_WINDOW_EVENTS_BEGIN
 
 		case event_window_size_changed:
