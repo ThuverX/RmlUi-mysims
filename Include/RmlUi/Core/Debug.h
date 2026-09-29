@@ -42,7 +42,7 @@ bool RMLUICORE_API Assert(const char* message, const char* file, int line);
 }
 
 // Define the RmlUi assertion macros.
-#if !defined RMLUI_DEBUG
+#if !defined RMLUI_DEBUG || defined RMLUI_DISABLE_DEBUG_ASSERTIONS
 
 	#define RMLUI_ASSERT(x)
 	#define RMLUI_ASSERTMSG(x, m)
@@ -95,4 +95,4 @@ struct RmlUiAssertNonrecursive {
 		static bool rmlui_nonrecursive_entered = false; \
 		RmlUiAssertNonrecursive rmlui_nonrecursive(rmlui_nonrecursive_entered)
 
-#endif // RMLUI_DEBUG
+#endif // RMLUI_DEBUG || RMLUI_DISABLE_DEBUG_ASSERTIONS
