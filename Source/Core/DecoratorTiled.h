@@ -28,6 +28,7 @@ public:
 		ROTATE_180,       // Rotated 180 degrees clockwise.
 		ROTATE_90,        // Rotated 90 degrees counter-clockwise.
 		ROTATE_90_FLIP_HORIZONTAL,
+		ROTATE_90_FLIP_VERTICAL,
 	};
 	/**
 	    Stores the fit mode of a tile.

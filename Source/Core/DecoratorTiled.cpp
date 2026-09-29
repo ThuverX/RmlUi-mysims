@@ -14,13 +14,14 @@ DecoratorTiled::DecoratorTiled() {}
 
 DecoratorTiled::~DecoratorTiled() {}
 
-static const Vector2f oriented_texcoords[6][2] = {
+static const Vector2f oriented_texcoords[7][2] = {
 	{Vector2f(0, 0), Vector2f(1, 1)}, // ORIENTATION_NONE
 	{Vector2f(1, 0), Vector2f(0, 1)}, // FLIP_HORIZONTAL
 	{Vector2f(0, 1), Vector2f(1, 0)}, // FLIP_VERTICAL
 	{Vector2f(1, 1), Vector2f(0, 0)}, // ROTATE_180
 	{Vector2f(0, 0), Vector2f(1, 1)}, // ROTATE_90
-	{Vector2f(0, 0), Vector2f(1, 1)}  // ROTATE_90_FLIP_HORIZONTAL
+	{Vector2f(0, 0), Vector2f(1, 1)}, // ROTATE_90_FLIP_HORIZONTAL
+	{Vector2f(0, 0), Vector2f(1, 1)}  // ROTATE_90_FLIP_VERTICAL
 };
 
 DecoratorTiled::Tile::Tile() : display_scale(1), position(0, 0), size(0, 0)
@@ -70,7 +71,7 @@ Vector2f DecoratorTiled::Tile::GetNaturalDimensions(Element* element) const
 	const float scale_raw_to_natural_dimensions = ElementUtilities::GetDensityIndependentPixelRatio(element) * display_scale;
 	const Vector2f raw_dimensions = tile_data.size;
 
-	const bool quarter_turn = (orientation == ROTATE_90 || orientation == ROTATE_90_FLIP_HORIZONTAL);
+	const bool quarter_turn = (orientation == ROTATE_90 || orientation == ROTATE_90_FLIP_HORIZONTAL || orientation == ROTATE_90_FLIP_VERTICAL);
 	const Vector2f oriented_dimensions = (quarter_turn ? Vector2f(raw_dimensions.y, raw_dimensions.x) : raw_dimensions);
 
 	return oriented_dimensions * scale_raw_to_natural_dimensions;
@@ -162,7 +163,7 @@ void DecoratorTiled::Tile::GenerateGeometry(Mesh& mesh, const ComputedValues& co
 		const Vector2f scaled_tile_dimensions = tile_dimensions * scale_factor;
 		final_tile_dimensions = surface_dimensions;
 		const float horizontal_repeat = surface_dimensions.x / scaled_tile_dimensions.x;
-		if (orientation == ROTATE_90 || orientation == ROTATE_90_FLIP_HORIZONTAL)
+		if (orientation == ROTATE_90 || orientation == ROTATE_90_FLIP_HORIZONTAL || orientation == ROTATE_90_FLIP_VERTICAL)
 			repeat_factor.y = horizontal_repeat;
 		else
 			repeat_factor.x = horizontal_repeat;
@@ -218,7 +219,7 @@ void DecoratorTiled::Tile::GenerateGeometry(Mesh& mesh, const ComputedValues& co
 
 	MeshUtilities::GenerateQuad(mesh, tile_position, final_tile_dimensions, quad_colour, scaled_texcoords[0], scaled_texcoords[1]);
 
-	if (orientation == ROTATE_90 || orientation == ROTATE_90_FLIP_HORIZONTAL)
+	if (orientation == ROTATE_90 || orientation == ROTATE_90_FLIP_HORIZONTAL || orientation == ROTATE_90_FLIP_VERTICAL)
 	{
 		const size_t first_vertex = mesh.vertices.size() - 4;
 		const Vector2f top_left = scaled_texcoords[0];
@@ -230,12 +231,19 @@ void DecoratorTiled::Tile::GenerateGeometry(Mesh& mesh, const ComputedValues& co
 			mesh.vertices[first_vertex + 2].tex_coord = Vector2f(top_left.x, bottom_right.y);
 			mesh.vertices[first_vertex + 3].tex_coord = top_left;
 		}
-		else
+		else if (orientation == ROTATE_90_FLIP_HORIZONTAL)
 		{
 			mesh.vertices[first_vertex + 0].tex_coord = bottom_right;
 			mesh.vertices[first_vertex + 1].tex_coord = Vector2f(bottom_right.x, top_left.y);
 			mesh.vertices[first_vertex + 2].tex_coord = top_left;
 			mesh.vertices[first_vertex + 3].tex_coord = Vector2f(top_left.x, bottom_right.y);
+		}
+		else
+		{
+			mesh.vertices[first_vertex + 0].tex_coord = top_left;
+			mesh.vertices[first_vertex + 1].tex_coord = Vector2f(top_left.x, bottom_right.y);
+			mesh.vertices[first_vertex + 2].tex_coord = bottom_right;
+			mesh.vertices[first_vertex + 3].tex_coord = Vector2f(bottom_right.x, top_left.y);
 		}
 	}
 }
@@ -280,7 +288,7 @@ void DecoratorTiledInstancer::RegisterTileProperty(const String& name, bool regi
 	}
 
 	ids.orientation = RegisterProperty(CreateString("%s-orientation", name.c_str()), "none")
-						  .AddParser("keyword", "none, flip-horizontal, flip-vertical, rotate-180, rotate-90, rotate-90-flip-horizontal")
+						  .AddParser("keyword", "none, flip-horizontal, flip-vertical, rotate-180, rotate-90, rotate-90-flip-horizontal, rotate-90-flip-vertical")
 						  .GetId();
 
 	RegisterShorthand(name,

@@ -70,7 +70,7 @@ void DecoratorTiledImage::RenderElement(Element* element, DecoratorDataHandle el
 			if (scaled_tile_width > 0.f)
 			{
 				const float phase = std::fmod(-image_position_x / scaled_tile_width, 1.f);
-				const int texture_axis = (tile.orientation == ROTATE_90 || tile.orientation == ROTATE_90_FLIP_HORIZONTAL) ? 1 : 0;
+				const int texture_axis = (tile.orientation == ROTATE_90 || tile.orientation == ROTATE_90_FLIP_HORIZONTAL || tile.orientation == ROTATE_90_FLIP_VERTICAL) ? 1 : 0;
 				for (Vertex& vertex : mesh.vertices)
 					vertex.tex_coord[texture_axis] += phase;
 			}
@@ -79,7 +79,7 @@ void DecoratorTiledImage::RenderElement(Element* element, DecoratorDataHandle el
 		if (tile.fit_mode == CONTAIN_HEIGHT_REPEAT_X && size.y > 0.f)
 		{
 			const float phase = std::fmod(-image_position_y / size.y, 1.f);
-			const int texture_axis = (tile.orientation == ROTATE_90 || tile.orientation == ROTATE_90_FLIP_HORIZONTAL) ? 0 : 1;
+			const int texture_axis = (tile.orientation == ROTATE_90 || tile.orientation == ROTATE_90_FLIP_HORIZONTAL || tile.orientation == ROTATE_90_FLIP_VERTICAL) ? 0 : 1;
 			for (Vertex& vertex : mesh.vertices)
 				vertex.tex_coord[texture_axis] += phase;
 		}
