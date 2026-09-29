@@ -155,7 +155,13 @@ inline constexpr const char* DXGIFormatToString(DXGI_FORMAT format)
 } // namespace Rml
 
 #ifdef RMLUI_DEBUG
-	#define RMLUI_DX_VERIFY_MSG(statement, msg) RMLUI_ASSERTMSG(SUCCEEDED(statement), msg)
+	#define RMLUI_DX_VERIFY_MSG(statement, msg)      \
+		do                                        \
+		{                                         \
+			const HRESULT rmlui_dx_verify_result = (statement); \
+			RMLUI_ASSERTMSG(SUCCEEDED(rmlui_dx_verify_result), msg); \
+			(void)rmlui_dx_verify_result;          \
+		} while (false)
 
 // Uncomment the following line to enable additional DirectX debugging.
 // #define RMLUI_DX_DEBUG
